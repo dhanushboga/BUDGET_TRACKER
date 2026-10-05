@@ -9,7 +9,7 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/storage-schema.md](./contracts/storage-schema.md), [quickstart.md](./quickstart.md)
 
-**Revision note**: This replaces the previous tasks.md, which built an Express + jQuery version of this feature. Per the updated plan.md, this app is now a dependency-free static site (vanilla JS + `localStorage`, no backend). Phase 1 includes removing the obsolete server/jQuery code.
+**Revision note**: This replaces the previous tasks.md, which built an Express + jQuery version of this feature. Per the updated plan.md, this app is now a dependency-free static site (vanilla JS + `localStorage`, no backend). Phase 1 includes removing the obsolete server/jQuery code. Phase 7 was added afterwards to apply Elsevier branding and a professional color palette to the already-complete UI; it does not change any functional requirement or user story. Phase 8 was added after that to enlarge and crop the Elsevier logo so its artwork is clearly visible.
 
 **Tests**: Not explicitly requested in the spec, so no per-story TDD test tasks are included. A small set of tests using Node's built-in test runner is included in the Polish phase to cover the validation and aggregation logic called out by FR-005 and SC-004, matching the testing approach chosen in research.md.
 
@@ -117,6 +117,40 @@ Per [plan.md](./plan.md)'s Project Structure: everything lives at the repository
 
 ---
 
+## Phase 7: Branding & Visual Design (Cross-Cutting)
+
+**Purpose**: Apply Elsevier branding and a more attractive, professional color palette across the existing UI. Purely presentational — no functional requirement, user story, or data model changes.
+
+- [X] T027 [P] Reference the Elsevier logo at `assets/elsevier-logo.webp` (already added to the repo) from `index.html`: display it in `.app-header` next to the "Budget Tracker" title
+- [X] T028 Add the Elsevier logo as a subtle background watermark on the page in `css/styles.css` (e.g. low-opacity, fixed, non-repeating `background-image` on `body`), tuned so panel/table/form content stays fully readable on top of it
+- [X] T029 [P] Define a professional Elsevier-inspired color palette as CSS custom properties at the top of `css/styles.css` (dark neutral `--color-header`, Elsevier orange `--color-accent` ~`#F36D21`, supporting neutrals/background/text colors)
+- [X] T030 Apply the new palette in `css/styles.css` by replacing hard-coded colors with the custom properties from T029: `.app-header`, `button`, `.stat-value`, `.budget-flag`, table header (`th`), and focus/hover states
+- [X] T031 **Partial**: no browser automation is available in this environment (same constraint as T025), so the restyle was verified by: re-running all 18 `node --test` unit tests (all pass — styling-only change, no logic touched), syntax-checking every JS file (`node -c`), and confirming `assets/elsevier-logo.webp` is referenced correctly from both `index.html` and `css/styles.css`. Recommend the user open `index.html` once to visually confirm legibility of the over-budget flag and validation errors against the new palette/watermark.
+
+**Checkpoint**: UI reflects Elsevier branding and a cohesive professional color scheme, with no regression to existing functionality
+
+---
+
+## Phase 8: Elsevier Logo Sizing & Clarity (Cross-Cutting)
+
+**Purpose**: Make the Elsevier logo large and clear enough to actually see the artwork (tree, "NON SOLUS" banner, figure, and orange "ELSEVIER" wordmark). Purely presentational — no functional requirement, user story, or data model changes.
+
+**Root cause**: `assets/elsevier-logo.webp` is 1280×719 px, but the artwork only fills a central box of roughly x 385–895 px, y 78–642 px (≈510×565 px, aspect ≈0.9:1); the rest is white padding. With the current `.app-logo { height: 2rem }` the visible artwork renders only ~25 px tall, which is why it looks tiny and blurry. The fix is to crop to the artwork box *and* enlarge it, rather than only increasing `height`.
+
+**Independent Test**: Open `index.html` at desktop width (≥1024 px) — the header logo shows the tree and the "ELSEVIER" wordmark legibly (~72 px tall frame, artwork uncut with only a thin white margin), vertically centered with the "Budget Tracker" title and not overlapping the month switcher. At ≤600 px width the logo shrinks proportionally and the header still fits without horizontal scroll.
+
+- [X] T032 In `index.html`, wrap the existing `<img src="assets/elsevier-logo.webp" alt="Elsevier" class="app-logo">` inside `.app-brand` in a new `<span class="app-logo-frame">…</span>` (keep the `<img>`, its `src`, and `alt="Elsevier"` unchanged for accessibility)
+- [X] T033 In `css/styles.css`, add a `.app-logo-frame` rule that crops to the artwork box: `display: inline-block; width: 4.125rem; height: 4.5rem; overflow: hidden; flex-shrink: 0; background: #fff; border-radius: 6px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);`
+- [X] T034 In `css/styles.css`, replace the existing `.app-logo` rule (currently `height: 2rem; width: auto; border-radius: 4px; background: #fff; padding: 0.15rem 0.35rem;`) with a scaled, offset image inside the frame: `display: block; height: 5.39rem; width: auto; max-width: none; margin-left: -2.74rem; margin-top: -0.45rem;` (scale = 4.5rem / 600 px, so left offset 365 px and top offset 60 px). The first pass used the unpadded 3.5rem box and clipped the bottom of the "ELSEVIER" wordmark and the tree's left edge, so the padded box and the larger 4.5rem frame were adopted
+- [X] T035 In `css/styles.css`, keep `.app-header` from cramping the larger logo: set `.app-brand { gap: 1rem; }`, add `flex-wrap: wrap; gap: 0.75rem;` to `.app-header`, and keep `padding: 1rem 1.5rem` (the header grows to fit the 4.5rem frame automatically via `align-items: center`)
+- [X] T036 In `css/styles.css`, add an `@media (max-width: 600px)` block that scales the logo down proportionally: `.app-logo-frame { width: 3.1rem; height: 3.375rem; }` and `.app-logo { height: 4.04rem; margin-left: -2.05rem; margin-top: -0.34rem; }` (the same ratios as T033/T034 × 0.75), plus `.app-header h1 { font-size: 1.1rem; }`
+- [X] T037 In `css/styles.css`, enlarge the `body::before` watermark so its artwork is also recognizable: change `background-size: 480px auto` to `background-size: min(1200px, 110vw) auto` (the 1280 px source is never upscaled more than slightly, so it stays sharp), and keep `opacity: 0.05` so panel, table, and form content stays fully readable
+- [X] T038 Verify: run `node --test` (all 18 unit tests still pass — no logic touched), confirm the `assets/elsevier-logo.webp` paths in `index.html` and `css/styles.css` are unchanged, and open `index.html` in a browser at ~1280 px and ~375 px widths to confirm the Independent Test above (logo artwork fully visible and uncut, wordmark readable, no header overflow). If browser automation is unavailable (as in T025/T031), record it as **Partial** and ask the user to check visually. **Done**: 18/18 tests pass; headless Edge screenshots (1280×800, plus a 2× zoom of the header) confirm the full artwork and wordmark are visible and unclipped and the header does not overflow. The 375 px check was inconclusive because headless Edge enforces a minimum window width wider than 375 px, so the `@media` rule is verified by its values only. A real phone or DevTools device-mode check is still recommended
+
+**Checkpoint**: The Elsevier logo is clearly visible in the header at desktop and mobile widths, the watermark is recognizable but unobtrusive, and existing functionality is unchanged
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -127,6 +161,8 @@ Per [plan.md](./plan.md)'s Project Structure: everything lives at the repository
 - **User Story 2 (Phase 4)**: Depends on Foundational only; independent of US1
 - **User Story 3 (Phase 5)**: Depends on Foundational; reads entries (US1) and budget (US2) data to compute the dashboard, so is most naturally built after US1 and US2 even though its own service/view code is separate
 - **Polish (Phase 6)**: Depends on the user stories it tests (US1, US2, US3) being complete
+- **Branding & Visual Design (Phase 7)**: Depends on Phases 1–6 being complete (restyles the finished UI); independent of which user stories ran in what order
+- **Logo Sizing & Clarity (Phase 8)**: Depends on Phase 7 (T027 logo markup, T028 watermark). Within the phase: T032 → T033 → T034 → T035 → T036 run sequentially (same files, and T036 mirrors T033/T034's values); T037 touches a separate rule and can run any time after T028; T038 runs last
 
 ### Within Each User Story
 
@@ -179,3 +215,5 @@ Task: "Refine the entry form and entry list markup in index.html"
 - No cross-story file conflicts: `index.html` and `css/styles.css` are touched by each story only to add that story's own section/rules; every JS module is story-specific except `js/dashboardView.js`, which is intentionally shared by US2 (budget fetch/save) and US3 (dashboard render) since both concern the month view.
 - Commit after each task or logical group; stop at any checkpoint to validate a story independently.
 - No `npm install` or any install step is required anywhere in this task list — the app has zero dependencies by design (see research.md).
+- Phase 7 is purely visual: it touches only `index.html` (logo reference) and `css/styles.css` (palette + watermark); no `js/` file changes.
+- Phase 8 is also purely visual and touches only `index.html` (one wrapper `<span>`) and `css/styles.css`; the logo asset itself is not modified or re-encoded.
