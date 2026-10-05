@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Tracker</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Budget Tracker</h1>
+    <div class="month-switcher">
+      <label for="month-select">Month</label>
+      <input type="month" id="month-select">
+    </div>
+  </header>
+
+  <main>
+    <section id="dashboard" class="panel">
+      <h2>Dashboard</h2>
+      <div id="dashboard-status" class="dashboard-status">
+        <div class="stat">
+          <span class="stat-label">Monthly Budget</span>
+          <span id="dashboard-budget" class="stat-value">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Total Spend</span>
+          <span id="dashboard-total" class="stat-value">—</span>
+        </div>
+        <div id="dashboard-flag" class="budget-flag" hidden>Over budget</div>
+      </div>
+      <h3>Spend by Category</h3>
+      <ul id="category-breakdown" class="category-breakdown"></ul>
+      <p id="dashboard-empty" class="empty-state" hidden>No spend recorded for this month yet.</p>
+    </section>
+
+    <section id="budget-control" class="panel">
+      <h2>Set Monthly Budget</h2>
+      <form id="budget-form">
+        <div class="field">
+          <label for="budget-amount">Budget amount</label>
+          <input type="number" id="budget-amount" name="amount" min="0.01" step="0.01" required>
+        </div>
+        <div class="field field-actions">
+          <button type="submit">Save Budget</button>
+        </div>
+        <span id="budget-form-error" class="form-error" role="alert"></span>
+      </form>
+    </section>
+
+    <section id="entry-section" class="panel">
+      <h2 id="entry-form-title">Add Spend Entry</h2>
+      <form id="entry-form">
+        <input type="hidden" id="entry-id" name="id">
+        <div class="field">
+          <label for="entry-date">Date</label>
+          <input type="date" id="entry-date" name="date" required>
+        </div>
+
+        <div class="field">
+          <label for="entry-category">Category</label>
+          <select id="entry-category" name="category" required>
+            <option value="" disabled selected>Select category</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Housing">Housing</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Health">Health</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="entry-description">Description</label>
+          <input type="text" id="entry-description" name="description">
+        </div>
+
+        <div class="field">
+          <label for="entry-amount">Amount</label>
+          <input type="number" id="entry-amount" name="amount" min="0.01" step="0.01" required>
+        </div>
+
+        <div class="field field-actions">
+          <button type="submit" id="entry-submit">Add Entry</button>
+          <button type="button" id="entry-cancel-edit" hidden>Cancel</button>
+        </div>
+        <span id="entry-form-error" class="form-error" role="alert"></span>
+      </form>
+
+      <h2>Entries This Month</h2>
+      <table id="entry-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="entry-list"></tbody>
+      </table>
+      <p id="entry-empty" class="empty-state" hidden>No entries for this month yet.</p>
+    </section>
+  </main>
+
+  <script src="js/storage.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/entryService.js"></script>
+  <script src="js/budgetService.js"></script>
+  <script src="js/dashboardService.js"></script>
+  <script src="js/entriesView.js"></script>
+  <script src="js/dashboardView.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
