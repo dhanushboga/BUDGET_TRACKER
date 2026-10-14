@@ -9,7 +9,7 @@ description: "Task list template for feature implementation"
 
 **Prerequisites**: [plan.md](./plan.md), [spec.md](./spec.md), [research.md](./research.md), [data-model.md](./data-model.md), [contracts/storage-schema.md](./contracts/storage-schema.md), [quickstart.md](./quickstart.md)
 
-**Revision note**: This replaces the previous tasks.md, which built an Express + jQuery version of this feature. Per the updated plan.md, this app is now a dependency-free static site (vanilla JS + `localStorage`, no backend). Phase 1 includes removing the obsolete server/jQuery code. Phase 7 was added afterwards to apply Elsevier branding and a professional color palette to the already-complete UI; it does not change any functional requirement or user story. Phase 8 was added after that to enlarge and crop the Elsevier logo so its artwork is clearly visible.
+**Revision note**: This replaces the previous tasks.md, which built an Express + jQuery version of this feature. Per the updated plan.md, this app is now a dependency-free static site (vanilla JS + `localStorage`, no backend). Phase 1 includes removing the obsolete server/jQuery code. Phase 7 was added afterwards to apply Elsevier branding and a professional color palette to the already-complete UI; it does not change any functional requirement or user story. Phase 8 was added after that to enlarge and crop the Elsevier logo so its artwork is clearly visible. Phase 9 adds a "Home Page" header button that redirects to https://www.elsevier.com/. Phase 10 moves that button below the logo and restores the month switcher to its original position. Phase 11 then removes the button and makes the Elsevier logo itself the link to https://www.elsevier.com/.
 
 **Tests**: Not explicitly requested in the spec, so no per-story TDD test tasks are included. A small set of tests using Node's built-in test runner is included in the Polish phase to cover the validation and aggregation logic called out by FR-005 and SC-004, matching the testing approach chosen in research.md.
 
@@ -149,6 +149,52 @@ Per [plan.md](./plan.md)'s Project Structure: everything lives at the repository
 
 **Checkpoint**: The Elsevier logo is clearly visible in the header at desktop and mobile widths, the watermark is recognizable but unobtrusive, and existing functionality is unchanged
 
+## Phase 9: Elsevier "Home Page" Button (Cross-Cutting)
+
+**Purpose**: Add a header button labelled "Home Page" that redirects the user to https://www.elsevier.com/. Purely navigational — no functional requirement, user story, data model, or `js/` changes.
+
+**Independent Test**: Open `index.html`; the header shows a "Home Page" button next to the month switcher, styled consistently with the Elsevier palette. Clicking it navigates the browser to https://www.elsevier.com/ (same tab). The button is keyboard-focusable and does not wrap or overflow the header at ~1280 px or ~375 px widths. Budget/entry data in `localStorage` is untouched.
+
+- [X] T039 In `index.html`, add a link-styled button to `.app-header` (after `.month-switcher`): `<a href="https://www.elsevier.com/" class="home-link" rel="noopener">Home Page</a>` (an anchor is used instead of a JS click handler so the redirect works without script and is accessible; visible text must be exactly "Home Page")
+- [X] T040 In `css/styles.css`, add a `.home-link` rule that matches the existing `button` look using the palette variables (`--color-accent` background, white text, same padding/border-radius/font as `button`, `text-decoration: none`, `display: inline-block`), plus `:hover` and `:focus-visible` states mirroring the `button` states
+- [X] T041 In `css/styles.css`, make the header accommodate the new control: ensure `.app-header` (already `flex-wrap: wrap`) lays out brand, month switcher, and `.home-link` cleanly, and inside the existing `@media (max-width: 600px)` block reduce `.home-link` padding/font-size so nothing overflows
+- [X] T042 Verify: run `node --test` (all 18 tests still pass), then open `index.html` and confirm the Independent Test above; if browser automation is unavailable, record as **Partial** and ask the user to click the button once **Partial**: 18/18 tests pass; no browser automation, so please click the button once to confirm the redirect.
+
+**Checkpoint**: The "Home Page" button appears in the header and redirects to https://www.elsevier.com/, with no regression to existing functionality
+
+---
+
+## Phase 10: Home Page Button Placement Below the Logo (Cross-Cutting)
+
+**Purpose**: Move the "Home Page" button (added in Phase 9) so it sits directly below the Elsevier logo, and restore the month switcher to its original layout (header = brand on the left, month switcher on the right, as it was before Phase 9). Purely presentational — the link text and https://www.elsevier.com/ target do not change; no `js/` changes.
+
+**Independent Test**: Open `index.html` at ~1280 px: the "Home Page" button is stacked directly under the Elsevier logo (left-aligned with it), the "Budget Tracker" title stays to the right of the logo, and the Month label + picker sit at the far right of the header exactly as before Phase 9 (the header's direct children are only `.app-brand` and `.month-switcher`). At ~375 px the stack still fits with no horizontal scroll. Clicking the button still goes to https://www.elsevier.com/.
+
+- [X] T043 In `index.html`, remove the `<a class="home-link">` from after `.month-switcher` in `.app-header`, and inside `.app-brand` wrap the logo and the link in a new `<div class="app-brand-logo">`: first the existing `<span class="app-logo-frame">…</span>`, then `<a href="https://www.elsevier.com/" class="home-link" rel="noopener">Home Page</a>`; keep the `<h1>Budget Tracker</h1>` as the next sibling of the wrapper inside `.app-brand`
+- [X] T044 In `css/styles.css`, add `.app-brand-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; flex-shrink: 0; }` and change `.app-brand` to `align-items: flex-start` if needed so the title stays vertically aligned with the logo; do not modify `.month-switcher`, `.month-switcher label`, or `.app-header`'s `justify-content: space-between`
+- [X] T045 In `css/styles.css`, adjust the `.home-link` rule for its new spot under the logo: `width: 4.125rem; text-align: center; padding: 0.25rem 0; font-size: 0.7rem; line-height: 1.2;` (matching the logo frame's width), and update the `@media (max-width: 600px)` `.home-link` override to `width: 3.1rem; font-size: 0.6rem;` (matching the mobile logo frame width)
+- [X] T046 Verify: run `node --test tests/unit/*.test.js` (all 18 pass), confirm via grep that `.app-header`'s only direct children in `index.html` are `.app-brand` and `.month-switcher`, and view `index.html` (headless browser screenshot if available) to confirm the Independent Test above; if visual checking is unavailable, record as **Partial** and ask the user to look at the header **Partial**: 18/18 tests pass and header children confirmed (.app-brand, .month-switcher only); no visual check done, please look at the header.
+
+**Checkpoint**: "Home Page" sits under the Elsevier logo, the month switcher is back to its original position, and the redirect still works
+
+---
+
+## Phase 11: Elsevier Logo as Home Link (Cross-Cutting)
+
+**Purpose**: Remove the "Home Page" button (Phases 9–10) and make the Elsevier logo itself the link to https://www.elsevier.com/. Purely navigational/presentational — no `js/` changes; the logo's size, crop, and position (Phase 8) must stay exactly as they are.
+
+**Independent Test**: Open `index.html`: no "Home Page" button exists anywhere; the header shows the logo (same size/crop as before), with the "Budget Tracker" title to its right and the month switcher at the far right. Hovering the logo shows a pointer cursor; clicking it navigates to https://www.elsevier.com/ (same tab); the logo is keyboard-focusable (Tab) with a visible focus ring and activates with Enter.
+
+- [X] T047 In `index.html`, remove the `<a ... class="home-link">Home Page</a>` element and the `<div class="app-brand-logo">` wrapper added in Phase 10 (T043), leaving `<span class="app-logo-frame">…</span>` as a direct child of `.app-brand` followed by `<h1>Budget Tracker</h1>`
+- [X] T048 In `index.html`, replace that `<span class="app-logo-frame">` with `<a href="https://www.elsevier.com/" class="app-logo-frame" rel="noopener" aria-label="Elsevier home page">` wrapping the existing `<img src="assets/elsevier-logo.webp" alt="Elsevier" class="app-logo">` (closing tag `</a>`); keep the `<img>` unchanged
+- [X] T049 In `css/styles.css`, delete the now-unused `.app-brand-logo` rule (T044) and all `.home-link` rules (base, `:hover`, `:focus-visible`, and the one inside `@media (max-width: 600px)`), keeping the `.app-logo-frame` and `.app-logo` rules from Phase 8 unchanged apart from the next task
+- [X] T050 In `css/styles.css`, make the anchor behave like the old span frame: add `cursor: pointer;` to `.app-logo-frame` (it already has `display: inline-block`, fixed size, and `overflow: hidden`), and add `.app-logo-frame:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }`
+- [X] T051 Verify: run `node --test tests/unit/*.test.js` (all 18 pass); grep `index.html` and `css/styles.css` to confirm `home-link`, `Home Page`, and `app-brand-logo` no longer appear and exactly one `href="https://www.elsevier.com/"` remains, wrapping the logo; confirm `.app-header`'s direct children are only `.app-brand` and `.month-switcher`; if no browser is available, record as **Partial** and ask the user to click the logo once **Partial**: 18/18 tests pass; grep confirms no home-link/Home Page/app-brand-logo remain and one Elsevier link wraps the logo; no browser check done.
+
+**Checkpoint**: The Home Page button is gone and clicking the Elsevier logo opens https://www.elsevier.com/, with no visual change to the header otherwise
+
+---
+
 ---
 
 ## Dependencies & Execution Order
@@ -162,6 +208,9 @@ Per [plan.md](./plan.md)'s Project Structure: everything lives at the repository
 - **User Story 3 (Phase 5)**: Depends on Foundational; reads entries (US1) and budget (US2) data to compute the dashboard, so is most naturally built after US1 and US2 even though its own service/view code is separate
 - **Polish (Phase 6)**: Depends on the user stories it tests (US1, US2, US3) being complete
 - **Branding & Visual Design (Phase 7)**: Depends on Phases 1–6 being complete (restyles the finished UI); independent of which user stories ran in what order
+- **Home Page Button (Phase 9)**: Depends on Phase 7 (palette variables, T029) and Phase 8 (header layout). T039 → T040 → T041 → T042 run sequentially (T041 edits the same stylesheet as T040, and both style the markup from T039)
+- **Home Page Placement (Phase 10)**: Depends on Phase 9 (moves T039's anchor and refines T040/T041's `.home-link` styles). T043 → T044 → T045 → T046 run sequentially (T044/T045 edit the same stylesheet and style T043's markup)
+- **Logo Home Link (Phase 11)**: Depends on Phases 9–10 (removes their button, wrapper, and CSS) and Phase 8 (keeps the logo frame/crop). T047 → T048 → T049 → T050 → T051 run sequentially (T047/T048 edit the same markup; T049/T050 the same stylesheet)
 - **Logo Sizing & Clarity (Phase 8)**: Depends on Phase 7 (T027 logo markup, T028 watermark). Within the phase: T032 → T033 → T034 → T035 → T036 run sequentially (same files, and T036 mirrors T033/T034's values); T037 touches a separate rule and can run any time after T028; T038 runs last
 
 ### Within Each User Story
@@ -217,3 +266,6 @@ Task: "Refine the entry form and entry list markup in index.html"
 - No `npm install` or any install step is required anywhere in this task list — the app has zero dependencies by design (see research.md).
 - Phase 7 is purely visual: it touches only `index.html` (logo reference) and `css/styles.css` (palette + watermark); no `js/` file changes.
 - Phase 8 is also purely visual and touches only `index.html` (one wrapper `<span>`) and `css/styles.css`; the logo asset itself is not modified or re-encoded.
+- Phase 9 is navigational and presentational only: it touches `index.html` (one anchor) and `css/styles.css`; no `js/` file changes.
+- Phase 10 is presentational only: it touches `index.html` (moves one anchor into a wrapper) and `css/styles.css`; no `js/` file changes.
+- Phase 11 supersedes the "Home Page" button of Phases 9–10 (kept in this file as history): it touches only `index.html` and `css/styles.css`; no `js/` file changes.
