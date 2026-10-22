@@ -1,5 +1,6 @@
 :root {
   --color-header-bg: #1a1f2b;
+  --color-app-header-bg: #f97316;
   --color-header-text: #ffffff;
   --color-accent: #e2600a;
   --color-accent-dark: #b84b06;
@@ -41,7 +42,7 @@ body::before {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.5rem;
-  background: var(--color-header-bg);
+  background: var(--color-app-header-bg);
   color: var(--color-header-text);
   border-bottom: 3px solid var(--color-accent);
   position: relative;
